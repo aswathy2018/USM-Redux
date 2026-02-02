@@ -1,0 +1,9 @@
+.center-box {
+  width: 300px;
+  padding: 20px;
+  margin: auto;
+  margin-top: 20vh;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+}
