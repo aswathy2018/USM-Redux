@@ -2,10 +2,10 @@ import express from "express"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import User from "../models/User.js"
+import upload from "../middleware/upload.js"
 
 const router = express.Router()
 
-//Signup
 // router.post("/signup", async (req, res) => {
 //   try {
 //     const { username, email, password, confirmPassword } = req.body;
@@ -21,20 +21,29 @@ const router = express.Router()
 
 //     const hashedPassword = await bcrypt.hash(password, 10);
 
-//     await User.create({
+//     const user = await User.create({
 //       username,
 //       email,
 //       password: hashedPassword
 //     });
 
-//     res.status(201).json({ message: "Signup successful" });
+//     const token = jwt.sign(
+//       { id: user._id, username: user.username },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "1d" }
+//     );
+
+//     res.status(201).json({
+//       token,
+//       username: user.username
+//     });
 
 //   } catch (error) {
 //     res.status(500).json({ message: "Server error" });
 //   }
 // });
 
-router.post("/signup", async (req, res) => {
+router.post("/signup", upload.single("profilePic"), async (req, res) => {
   try {
     const { username, email, password, confirmPassword } = req.body;
 
@@ -52,23 +61,25 @@ router.post("/signup", async (req, res) => {
     const user = await User.create({
       username,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      profilePic: req.file ? req.file.filename : ""
     });
 
-    // 🔑 CREATE TOKEN
     const token = jwt.sign(
-      { id: user._id, username: user.username },
+      { id: user._id },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
     res.status(201).json({
-      token,
-      username: user.username
-    });
+  token,
+  username: user.username,
+  profilePic: user.profilePic   // ✅ ADD THIS
+});
+
 
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -95,10 +106,12 @@ router.post("/login", async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res.json({
-      token,
-      username: user.username
-    });
+    res.status(201).json({
+  token,
+  username: user.username,
+  profilePic: user.profilePic   // ✅ ADD THIS
+});
+
 
   } catch (error) {
     res.status(500).json({ message: "Server error" });

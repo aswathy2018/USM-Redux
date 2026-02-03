@@ -1,18 +1,44 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
+import axios from 'axios'
+import { useDispatch } from 'react-redux'
+import { loginSuccess } from '../../redux/slice/userSlice'
 
 const Login = () => {
   const navigate = useNavigate()
+  const dispatch = useDispatch()
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
-  const handleLogin = (e) => {
-    e.preventDefault()
-    console.log({ email, password })
-    navigate('/home')
+const handleLogin = async (e) => {
+  e.preventDefault()
+
+  try {
+    const res = await axios.post(
+      "http://localhost:5000/login",
+      { email, password }
+    )
+
+    const { token, username } = res.data
+
+    localStorage.setItem("token", token)
+    localStorage.setItem("username", username)
+
+
+    // Update Redux
+    dispatch(loginSuccess({ username, token }))
+
+
+    // Redirect
+    navigate("/home")
+
+  } catch (error) {
+    alert(error.response?.data?.message || "Login failed")
   }
+}
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">

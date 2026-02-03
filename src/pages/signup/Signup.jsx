@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux'
 import axios from '../../utils/axiosInstance'
 import { loginSuccess } from '../../redux/slice/userSlice'
 
+
 const Signup = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch();
@@ -15,6 +16,53 @@ const Signup = () => {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [profilePic, setProfilePic] = useState(null);
+  const [preview, setPreview] = useState(null);
+
+const handleImageChange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+
+  if (!allowedTypes.includes(file.type)) {
+    alert("Only JPG, JPEG, PNG allowed");
+    return;
+  }
+
+  // No ratio validation anymore
+  setProfilePic(file);
+  setPreview(URL.createObjectURL(file));
+};
+
+
+// const handleSignup = async (e) => {
+//   e.preventDefault();
+
+//   if (password !== confirmPassword) {
+//     alert("Passwords do not match");
+//     return;
+//   }
+
+//   try {
+//     const res = await axios.post("/signup", {
+//       username: name,
+//       email,
+//       password,
+//       confirmPassword,
+//     });
+
+//     dispatch(loginSuccess({
+//       token: res.data.token,
+//       username: res.data.username,
+//     }));
+
+//     navigate("/home");
+
+//   } catch (err) {
+//     alert(err.response?.data?.message || "Signup failed");
+//   }
+// };
 
 const handleSignup = async (e) => {
   e.preventDefault();
@@ -25,17 +73,22 @@ const handleSignup = async (e) => {
   }
 
   try {
-    const res = await axios.post("/auth/signup", {
-      username: name,
-      email,
-      password,
-      confirmPassword,
-    });
+    const formData = new FormData();
+
+    formData.append("username", name);
+    formData.append("email", email);
+    formData.append("password", password);
+    formData.append("confirmPassword", confirmPassword);
+    formData.append("profilePic", profilePic); // 👈 VERY IMPORTANT
+
+    const res = await axios.post("/signup", formData)
 
     dispatch(loginSuccess({
-      token: res.data.token,
-      username: res.data.username,
-    }));
+  token: res.data.token,
+  username: res.data.username,
+  profilePic: res.data.profilePic, // 👈 ADD
+}));
+
 
     navigate("/home");
 
@@ -129,6 +182,27 @@ const handleSignup = async (e) => {
               </button>
             </div>
           </div>
+
+          <div>
+  <label className="block text-sm font-semibold mb-2">
+    Profile Picture
+  </label>
+
+  <input
+    type="file"
+    accept="image/png, image/jpeg, image/jpg"
+    onChange={handleImageChange}
+  />
+
+  {preview && (
+    <img
+      src={preview}
+      alt="preview"
+      className="mt-3 w-24 h-24 object-cover rounded-full border"
+    />
+  )}
+</div>
+
 
           <button
             type="submit"

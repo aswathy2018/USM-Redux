@@ -10,7 +10,8 @@ const app = express()
 app.use(cors());
 app.use(express.json());
 
-app.use("/auth", authRoutes);
+app.use("/", authRoutes);
+app.use("/uploads", express.static("uploads"));
 
 mongoose.connect(process.env.MONGO_URL)
     .then(()=>console.log("MongoDB Connected"))
