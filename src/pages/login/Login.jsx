@@ -22,14 +22,22 @@ const handleLogin = async (e) => {
       { email, password }
     )
 
-    const { token, username } = res.data
+    const { token, username, profilePic, email: userEmail } = res.data
+
 
     localStorage.setItem("token", token)
     localStorage.setItem("username", username)
+    localStorage.setItem("profilePic", profilePic);
 
 
     // Update Redux
-    dispatch(loginSuccess({ username, token }))
+    dispatch(loginSuccess({
+  username,
+  profilePic,
+  email: userEmail,
+  token
+}))
+
 
 
     // Redirect

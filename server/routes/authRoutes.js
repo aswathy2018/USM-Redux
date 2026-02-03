@@ -74,7 +74,8 @@ router.post("/signup", upload.single("profilePic"), async (req, res) => {
     res.status(201).json({
   token,
   username: user.username,
-  profilePic: user.profilePic   // ✅ ADD THIS
+  profilePic: user.profilePic,
+  email: user.email
 });
 
 
@@ -109,7 +110,8 @@ router.post("/login", async (req, res) => {
     res.status(201).json({
   token,
   username: user.username,
-  profilePic: user.profilePic   // ✅ ADD THIS
+  profilePic: user.profilePic,
+  email: user.email
 });
 
 

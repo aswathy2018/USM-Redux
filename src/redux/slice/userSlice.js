@@ -36,7 +36,8 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   isLoggedIn: !!localStorage.getItem("token"),
   username: localStorage.getItem("username") || null,
-  profilePic: localStorage.getItem("profilePic") || null, // 👈 ADD HERE
+  profilePic: localStorage.getItem("profilePic") || null,
+  email: localStorage.getItem("email") || null,
   token: localStorage.getItem("token") || null,
 };
 
@@ -49,11 +50,13 @@ const userSlice = createSlice({
         state.isLoggedIn = true;
         state.username = action.payload.username;
         state.profilePic = action.payload.profilePic;
+        state.email = action.payload.email;
         state.token = action.payload.token;
 
 
         localStorage.setItem("token", action.payload.token);
         localStorage.setItem("username", action.payload.username);
+        localStorage.setItem("email", action.payload.email);
         localStorage.setItem("profilePic", action.payload.profilePic);
     },
     logout: (state) => {
@@ -62,7 +65,6 @@ const userSlice = createSlice({
         state.token = null;
         state.profilePic = null;
 
-        localStorage.removeItem("profilePic");
         localStorage.clear();
     }
   },

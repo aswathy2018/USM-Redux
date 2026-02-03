@@ -5,6 +5,7 @@ import Signup from "./pages/signup/Signup"
 import { UserProtect, UserLoginProtect } from './secure/UserProtect'
 import Home from "./pages/home/Home"
 import Profile from "./pages/profile/Profile"
+import EditProfile from "./pages/profile/EditProfile"
 
 const App = () => {
   return (
@@ -29,7 +30,13 @@ const App = () => {
           <Profile />
         </UserProtect>
       } />
+      <Route path='/editProfile' element={
+        <UserProtect>
+          <EditProfile />
+        </UserProtect>
+      } />
     </Routes>
+
   )
 }
 
