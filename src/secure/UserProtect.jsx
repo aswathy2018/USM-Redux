@@ -1,8 +1,22 @@
+import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 
-const UserProtect = ({children}) => {
-    const token = localStorage.getItem("token");
-    return token ? children : <Navigate to="/login" />
-}
+export const UserProtect = ({ children }) => {
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
 
-export default UserProtect
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
+export const UserLoginProtect = ({ children }) => {
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+
+  if (isLoggedIn) {
+    return <Navigate to="/home" replace />;
+  }
+
+  return children;
+};

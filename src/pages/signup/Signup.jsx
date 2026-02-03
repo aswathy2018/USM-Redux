@@ -1,9 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
+import { useDispatch } from 'react-redux'
+import axios from '../../utils/axiosInstance'
+import { loginSuccess } from '../../redux/slice/userSlice'
 
 const Signup = () => {
   const navigate = useNavigate()
+  const dispatch = useDispatch();
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -12,17 +16,33 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  const handleSignup = (e) => {
-    e.preventDefault()
+const handleSignup = async (e) => {
+  e.preventDefault();
 
-    if (password !== confirmPassword) {
-      alert('Passwords do not match')
-      return
-    }
-
-    console.log({ name, email, password, confirmPassword })
-    navigate('/login')
+  if (password !== confirmPassword) {
+    alert("Passwords do not match");
+    return;
   }
+
+  try {
+    const res = await axios.post("/auth/signup", {
+      username: name,
+      email,
+      password,
+      confirmPassword,
+    });
+
+    dispatch(loginSuccess({
+      token: res.data.token,
+      username: res.data.username,
+    }));
+
+    navigate("/home");
+
+  } catch (err) {
+    alert(err.response?.data?.message || "Signup failed");
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">

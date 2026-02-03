@@ -1,7 +1,7 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../../redux/slice/UserSlice';
+import { logout } from '../../redux/slice/userSlice';
 
 const Home = () => {
     const username = localStorage.getItem("username")
