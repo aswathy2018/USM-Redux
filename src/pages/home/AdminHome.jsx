@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import {logout} from "../../redux/slice/adminSlice"
+import { Eye, EyeOff } from "lucide-react";
 
 
 export default function AdminUsers() {
@@ -19,6 +20,10 @@ export default function AdminUsers() {
   const [selectedUser, setSelectedUser] = useState(null);
 
   const [preview, setPreview] = useState(null);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
 
   const dispatch = useDispatch();
 const navigate = useNavigate();
@@ -299,6 +304,10 @@ const handleLogout = () => {
 
         setShowAdd(false);
         setPreview(null);
+
+        setShowPassword(false);
+        setShowConfirmPassword(false);
+
         setForm({
           username: "",
           email: "",
@@ -341,7 +350,11 @@ const handleLogout = () => {
           />
 
           <button
-            onClick={() => setShowAdd(true)}
+            onClick={() => {
+              setShowAdd(true);
+              setShowPassword(false);
+              setShowConfirmPassword(false);
+            }}
             className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
           >
             + Add User
@@ -479,31 +492,54 @@ const handleLogout = () => {
               />
             </div>
 
-            <div className="mb-3">
-              {errors.password && (
-                <p className="text-red-500 text-sm mb-1">{errors.password}</p>
-              )}
-              <input
-                type="password"
-                placeholder="Password"
-                className={`border w-full p-2 ${errors.password ? "border-red-500" : ""}`}
-                value={form.password}
-                onChange={handlePasswordChange}
-              />
-            </div>
+              <div className="mb-3">
+                {errors.password && (
+                  <p className="text-red-500 text-sm mb-1">{errors.password}</p>
+                )}
 
-            <div className="mb-3">
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm mb-1">{errors.confirmPassword}</p>
-              )}
-              <input
-                type="password"
-                placeholder="Confirm Password"
-                className={`border w-full p-2 ${errors.confirmPassword ? "border-red-500" : ""}`}
-                value={form.confirmPassword}
-                onChange={handleConfirmPasswordChange}
-              />
-            </div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                    className={`border w-full p-2 pr-10 ${errors.password ? "border-red-500" : ""}`}
+                    value={form.password}
+                    onChange={handlePasswordChange}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="mb-3">
+                {errors.confirmPassword && (
+                  <p className="text-red-500 text-sm mb-1">{errors.confirmPassword}</p>
+                )}
+
+                <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  className={`border w-full p-2 pr-10 ${errors.confirmPassword ? "border-red-500" : ""}`}
+                  value={form.confirmPassword}
+                  onChange={handleConfirmPasswordChange}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              </div>
+
 
             <div className="mb-3">
               {errors.profilePic && (
@@ -528,26 +564,31 @@ const handleLogout = () => {
             )}
 
             <div className="flex justify-end gap-3">
-              <button onClick={() => {
-                setShowAdd(false);
-                setPreview(null);
-                setForm({
-                  username: "",
-                  email: "",
-                  password: "",
-                  confirmPassword: "",
-                  profilePic: null
-                });
-                setErrors({
-                  username: "",
-                  email: "",
-                  password: "",
-                  confirmPassword: "",
-                  profilePic: ""
-                });
-              }}>
-                Cancel
-              </button>
+                <button onClick={() => {
+                  setShowAdd(false);
+                  setPreview(null);
+                  setShowPassword(false);
+                  setShowConfirmPassword(false);
+
+                  setForm({
+                    username: "",
+                    email: "",
+                    password: "",
+                    confirmPassword: "",
+                    profilePic: null
+                  });
+
+                  setErrors({
+                    username: "",
+                    email: "",
+                    password: "",
+                    confirmPassword: "",
+                    profilePic: ""
+                  });
+                }}>
+
+                  Cancel
+                </button>
 
               <button
                 onClick={handleAddUser}
