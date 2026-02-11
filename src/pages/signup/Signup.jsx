@@ -219,8 +219,11 @@ const handleSignup = async (e) => {
 
     const res = await axios.post("/signup", formData)
 
+    localStorage.removeItem("adminToken");
+    localStorage.setItem("token", res.data.accessToken);
+
     dispatch(loginSuccess({
-      token: res.data.token,
+      token: res.data.accessToken,
       username: res.data.username,
       profilePic: res.data.profilePic,
       email: res.data.email

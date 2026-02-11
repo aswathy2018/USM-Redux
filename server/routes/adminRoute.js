@@ -4,30 +4,38 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import upload from "../middleware/upload.js";
 import adminMiddleware from "../middleware/adminMiddleware.js";
+import { generateAccessToken, generateRefreshToken } from "../utils/generateTokens.js";
+
 
 const router = express.Router();
 
-// Admin Login
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
+
     if (!user || !user.isAdmin) {
       return res.status(403).json({ message: "Access denied: Not an admin" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+    if (!isMatch)
+      return res.status(400).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign(
-      { id: user._id, username: user.username, isAdmin: true },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    // ✅ Store refresh token in cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: false, // true in production (HTTPS)
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
 
     res.status(200).json({
-      token,
+      accessToken,
       username: user.username,
       email: user.email
     });
@@ -35,6 +43,29 @@ router.post("/login", async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+});
+
+
+router.post("/refresh", (req, res) => {
+
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken)
+    return res.status(401).json({ message: "No refresh token" });
+
+  jwt.verify(
+    refreshToken,
+    process.env.REFRESH_TOKEN_SECRET,
+    (err, user) => {
+
+      if (err)
+        return res.status(403).json({ message: "Invalid refresh token" });
+
+      const newAccessToken = generateAccessToken(user);
+
+      res.json({ accessToken: newAccessToken });
+    }
+  );
 });
 
 

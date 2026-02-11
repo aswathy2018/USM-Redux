@@ -30,9 +30,25 @@ const handleLogin = async (e) => {
       password
     });
 
-    dispatch(loginSuccess(res.data));
+    // localStorage.removeItem("token");
+    localStorage.setItem("adminToken", res.data.accessToken);
+    // dispatch(loginSuccess(res.data));
 
-    window.location.replace('/admin/users');
+    // remove user session completely
+localStorage.removeItem("token");
+localStorage.removeItem("username");
+localStorage.removeItem("profilePic");
+localStorage.removeItem("email");
+
+// dispatch correctly
+dispatch(loginSuccess({
+  username: res.data.username,
+  token: res.data.accessToken
+}));
+
+
+    navigate('/admin/users', { replace: true });
+
 
   } catch (err) {
     console.error(err);

@@ -93,21 +93,25 @@ const Login = () => {
     try {
       const res = await axios.post(
         "http://localhost:5000/login",
-        { email, password }
+        { email, password },
+        { withCredentials: true }
       )
-      const { token, username, profilePic, email: userEmail } = res.data
-      localStorage.setItem("token", token)
+
+      localStorage.removeItem("adminToken");
+      const { accessToken, username, profilePic, email: userEmail } = res.data
+      localStorage.setItem("token", accessToken)
       localStorage.setItem("username", username)
       localStorage.setItem("profilePic", profilePic);
       dispatch(loginSuccess({
         username,
         profilePic,
         email: userEmail,
-        token
+        token: accessToken
       }))
       navigate("/home")
     } catch (error) {
-      alert(error.response?.data?.message || "Login failed")
+      console.log(error);
+      alert(error.response?.data?.message || "Login failed");
     }
   }
 

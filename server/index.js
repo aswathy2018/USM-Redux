@@ -4,19 +4,23 @@ import dotenv from "dotenv"
 import mongoose from "mongoose"
 import authRoutes from "./routes/authRoutes.js"
 import adminRoutes from "./routes/adminRoute.js"
-import adminUserRoutes from "./routes/adminRoute.js"
+import cookieParser from "cookie-parser"
 
 dotenv.config()
 const app = express()
 
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
+
 app.use(express.json());
+app.use(cookieParser());
 
 app.use("/", authRoutes);
 app.use("/uploads", express.static("uploads"));
 
-app.use("/admin", adminRoutes);
-app.use("/admin", adminUserRoutes);  
+app.use("/admin", adminRoutes);  
 
 mongoose.connect(process.env.MONGO_URL)
     .then(()=>console.log("MongoDB Connected"))

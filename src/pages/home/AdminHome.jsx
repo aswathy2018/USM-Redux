@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import adminAxios from "../../utils/adminAxios";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
@@ -9,7 +9,8 @@ import { Eye, EyeOff } from "lucide-react";
 
 export default function AdminUsers() {
 
-  const token = useSelector(state => state.admin.token);
+  const reduxToken = useSelector(state => state.admin.token);
+const token = reduxToken || localStorage.getItem("adminToken");
 
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
@@ -30,9 +31,9 @@ const navigate = useNavigate();
 
 const handleLogout = () => {
   const confirmLogout = window.confirm("Are you sure you want to logout?");
-
   if (!confirmLogout) return;
 
+  localStorage.removeItem("adminToken");
   dispatch(logout());
   navigate("/admin/login");
 };
@@ -199,7 +200,7 @@ const handleLogout = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get(API, authHeader);
+      const res = await adminAxios.get("/admin/users");
       setUsers(res.data);
     } catch (err) {
       console.log(err);
@@ -207,8 +208,13 @@ const handleLogout = () => {
   };
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+
+  if (!token) return;
+
+  fetchUsers();
+
+}, [token]);
+
 
   const filteredUsers = users.filter(user =>
     user.username.toLowerCase().includes(search.toLowerCase()) ||
@@ -222,7 +228,7 @@ const handleLogout = () => {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`${API}/${id}`, authHeader);
+      await adminAxios.delete(`${API}/${id}`, authHeader);
       fetchUsers();
     } catch (err) {
       console.log(err);
@@ -267,7 +273,7 @@ const handleLogout = () => {
     if (!confirmUpdate) return;
 
     try {
-      await axios.put(`${API}/${selectedUser._id}`, form, authHeader);
+      await adminAxios.put(`${API}/${selectedUser._id}`, form, authHeader);
 
       setShowEdit(false);
       fetchUsers();
@@ -295,7 +301,7 @@ const handleLogout = () => {
       data.append("password", form.password);
       data.append("profilePic", form.profilePic);
 
-        await axios.post(API, data, {
+        await adminAxios.post(API, data, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "multipart/form-data"
