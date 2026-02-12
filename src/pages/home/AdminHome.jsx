@@ -467,7 +467,7 @@ const handleLogout = () => {
         </div>
       )}
 
-{/* Add modal */}
+{/* User Adding modal */}
       {showAdd && (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
 
