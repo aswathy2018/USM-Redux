@@ -254,35 +254,57 @@ const handleLogout = () => {
     setShowEdit(true);
   };
 
-  const handleUpdate = async () => {
+const handleUpdate = async () => {
 
-    const usernameError = validateUsername(form.username);
-    const emailError = validateEmail(form.email);
+  const usernameError = validateUsername(form.username);
+  const emailError = validateEmail(form.email);
 
-    if (usernameError || emailError) {
-      setErrors({
-        ...errors,
-        username: usernameError,
-        email: emailError
-      });
-      return;
-    }
+  if (usernameError || emailError) {
+    setErrors({
+      ...errors,
+      username: usernameError,
+      email: emailError
+    });
+    return;
+  }
+
+  try {
+
+    await adminAxios.put(`${API}/${selectedUser._id}`, form, authHeader);
 
     const confirmUpdate = window.confirm("Confirm update?");
 
     if (!confirmUpdate) return;
 
-    try {
-      await adminAxios.put(`${API}/${selectedUser._id}`, form, authHeader);
+    setShowEdit(false);
+    fetchUsers();
 
-      setShowEdit(false);
-      fetchUsers();
-    } catch (err) {
-      console.log(err);
+  } catch (err) {
+
+    if (err.response?.data?.message) {
+      setErrors(prev => ({
+        ...prev,
+        email: err.response.data.message
+      }));
+    } else {
+      alert("Something went wrong");
     }
-  };
+  }
+};
 
-  const handleAddUser = async () => {
+
+const handleAddUser = async () => {
+
+  if (!validateAllFields()) return;
+
+  try {
+    const data = new FormData();
+    data.append("username", form.username);
+    data.append("email", form.email);
+    data.append("password", form.password);
+    data.append("profilePic", form.profilePic);
+
+    await adminAxios.post(API, data, authHeader);
 
     if (!validateAllFields()) {
       return;
@@ -292,48 +314,21 @@ const handleLogout = () => {
 
     if (!confirmAdd) return;
 
-    try {
+    setShowAdd(false);
+    fetchUsers();
 
-      const data = new FormData();
+  } catch (err) {
 
-      data.append("username", form.username);
-      data.append("email", form.email);
-      data.append("password", form.password);
-      data.append("profilePic", form.profilePic);
-
-        await adminAxios.post(API, data, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data"
-            }
-        });
-
-        setShowAdd(false);
-        setPreview(null);
-
-        setShowPassword(false);
-        setShowConfirmPassword(false);
-
-        setForm({
-          username: "",
-          email: "",
-          password: "",
-          confirmPassword: "",
-          profilePic: null
-        });
-        setErrors({
-          username: "",
-          email: "",
-          password: "",
-          confirmPassword: "",
-          profilePic: ""
-        });
-        fetchUsers();
-
-    } catch (err) {
-      console.log(err);
+    if (err.response?.data?.message) {
+      setErrors(prev => ({
+        ...prev,
+        email: err.response.data.message
+      }));
+    } else {
+      alert("Something went wrong");
     }
-  };
+  }
+};
 
   return (
     <div className="p-6 min-h-screen bg-gray-100">

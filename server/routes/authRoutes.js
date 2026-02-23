@@ -55,6 +55,8 @@ router.post("/signup", upload.single("profilePic"), async (req, res) => {
   }
 });
 
+
+//Login
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -68,7 +70,7 @@ router.post("/login", async (req, res) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    // storing the refresh token in cookie
+    // storing refresh token in cookie
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: false,
@@ -89,6 +91,7 @@ router.post("/login", async (req, res) => {
 });
 
 
+//recreation of access token if it expaires
 router.post("/refresh", (req, res) => {
 
   const token = req.cookies.refreshToken;
@@ -113,52 +116,57 @@ router.post("/refresh", (req, res) => {
   }
 });
 
-
-
 router.put(
   "/update-user",
   authMiddleware,
-  upload.single("profilePic"), async (req, res) => {
-  try {
+  upload.single("profilePic"),
+  async (req, res) => {
+    try {
+      const { id } = req.user;
+      const { username, email, password } = req.body;
 
-    const { id } = req.user;
+      const existingUser = await User.findOne({ email });
+      if (existingUser && existingUser._id.toString() !== id) {
+        return res.status(400).json({
+          message: "Email already exists. Please use another email."
+        });
+      }
 
-    const { username, email, password } = req.body;
+      let updatedData = {
+        username,
+        email
+      };
 
-    let updatedData = {
-      username,
-      email
-    };
+      if (password) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        updatedData.password = hashedPassword;
+      }
 
-    // If password entered → hash it
-    if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      updatedData.password = hashedPassword;
+      if (req.file) {
+        updatedData.profilePic = req.file.filename;
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(
+        id,
+        updatedData,
+        { new: true }
+      );
+
+      res.json({
+        username: updatedUser.username,
+        email: updatedUser.email,
+        profilePic: updatedUser.profilePic
+      });
+
+    } catch (error) {
+      if (error.code === 11000) {
+        return res.status(400).json({
+          message: "Email already exists. Please use another email."
+        });
+      }
+      res.status(500).json({ message: "Server error" });
     }
-
-    // If new image uploaded
-    if (req.file) {
-      updatedData.profilePic = req.file.filename;
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      id,
-      updatedData,
-      { new: true }
-    );
-
-    res.json({
-      username: updatedUser.username,
-      email: updatedUser.email,
-      profilePic: updatedUser.profilePic
-    });
-
-  } catch (error) {
-  console.log("UPDATE USER ERROR:", error);
-  res.status(500).json({ message: error.message });
-}
-});
-
-
+  }
+);
 
 export default router;

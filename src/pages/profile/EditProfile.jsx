@@ -164,7 +164,6 @@ const handleImageChange = (e) => {
 };
 
 const handleUpdate = async () => {
-
   const nameError = validateName(name);
   const emailError = validateEmail(userEmail);
   const passwordError = validatePassword(password);
@@ -176,49 +175,60 @@ const handleUpdate = async () => {
     password: passwordError,
     profilePic: profilePicError
   };
+
   setErrors(newErrors);
+
   if (Object.values(newErrors).some(error => error !== '')) {
     return;
   }
 
-  const isConfirmed = window.confirm(
-    "Are you sure you want to update your profile?"
-  );
-
-  if (!isConfirmed) {
-    return;
-  }
   const formData = new FormData();
-
   formData.append("username", name);
   formData.append("email", userEmail);
 
-  if(password){
+  if (password) {
     formData.append("password", password);
   }
-  if(image){
+
+  if (image) {
     formData.append("profilePic", image);
   }
+
   try {
+
     const res = await axios.put(
       "http://localhost:5000/update-user",
       formData,
       {
-        headers:{
-          Authorization:`Bearer ${token}`,
-          "Content-Type":"multipart/form-data"
+        headers: {
+          Authorization: `Bearer ${token}`,
         }
       }
     );
+
+    const isConfirmed = window.confirm(
+      "Are you sure you want to update your profile?"
+    );
+
+    if (!isConfirmed) return;
+
     dispatch(loginSuccess({
       username: res.data.username,
       email: res.data.email,
       profilePic: res.data.profilePic,
       token
     }));
+
+
     navigate("/profile");
-  } catch(err){
-    console.log(err);
+
+  } catch (err) {
+
+    if (err.response?.data?.message) {
+      alert(err.response.data.message);
+    } else {
+      alert("Something went wrong");
+    }
   }
 };
 

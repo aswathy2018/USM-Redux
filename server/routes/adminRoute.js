@@ -26,10 +26,10 @@ router.post("/login", async (req, res) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    // ✅ Store refresh token in cookie
+    // storing refresh token in cookie
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: false, // true in production (HTTPS)
+      secure: false,
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
@@ -88,7 +88,6 @@ router.get("/users", adminMiddleware, async (req, res) => {
 //Add user
 router.post("/users", adminMiddleware, upload.single("profilePic"), async (req, res) => {
   try {
-
     const { username, email, password } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -103,10 +102,23 @@ router.post("/users", adminMiddleware, upload.single("profilePic"), async (req, 
 
     await newUser.save();
 
-    res.status(201).json({ message: "User created successfully" });
+    return res.status(201).json({
+      message: "User created successfully"
+    });
 
   } catch (err) {
-    res.status(500).json({ message: err.message });
+
+    if (err.code === 11000) {
+      return res.status(400).json({
+        message: "Email already exists"
+      });
+    }
+
+    console.error("SERVER ERROR:", err);
+
+    return res.status(500).json({
+      message: "Something went wrong"
+    });
   }
 });
 
@@ -114,8 +126,13 @@ router.post("/users", adminMiddleware, upload.single("profilePic"), async (req, 
 //Update user
 router.put("/users/:id", adminMiddleware, async (req, res) => {
   try {
-
     const { username, email } = req.body;
+
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser && existingUser._id.toString() !== req.params.id) {
+      return res.status(400).json({ message: "User already exists" });
+    }
 
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
@@ -126,7 +143,12 @@ router.put("/users/:id", adminMiddleware, async (req, res) => {
     res.status(200).json(updatedUser);
 
   } catch (err) {
-    res.status(500).json({ message: err.message });
+
+    if (err.code === 11000) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -151,7 +173,6 @@ router.delete("/users/:id", adminMiddleware, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
 
 
 export default router;
