@@ -31,7 +31,6 @@ router.post("/signup", upload.single("profilePic"), async (req, res) => {
       profilePic: req.file ? req.file.filename : ""
     });
 
-    //
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
@@ -116,11 +115,9 @@ router.post("/refresh", (req, res) => {
   }
 });
 
-router.put(
-  "/update-user",
-  authMiddleware,
-  upload.single("profilePic"),
-  async (req, res) => {
+
+// Edit profile
+router.put("/update-user", authMiddleware, upload.single("profilePic"), async (req, res) => {
     try {
       const { id } = req.user;
       const { username, email, password } = req.body;
