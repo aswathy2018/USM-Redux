@@ -40,7 +40,7 @@ const validateEmail = (value) => {
   if (!value.trim()) {
     return 'Email is required';
   }
-  if (!/^[a-zA-Z][a-zA-Z0-9]*@gmail\.com$/.test(value)) {
+  if (!/^[a-z][a-z0-9]*@gmail\.com$/.test(value)) {
     return 'Email must start with a letter, and only gmail.com is allowed';
   }
   return '';
@@ -164,6 +164,7 @@ const handleImageChange = (e) => {
 };
 
 const handleUpdate = async () => {
+
   const nameError = validateName(name);
   const emailError = validateEmail(userEmail);
   const passwordError = validatePassword(password);
@@ -182,6 +183,12 @@ const handleUpdate = async () => {
     return;
   }
 
+  const isConfirmed = window.confirm(
+    "Are you sure you want to update your profile?"
+  );
+
+  if (!isConfirmed) return;
+
   const formData = new FormData();
   formData.append("username", name);
   formData.append("email", userEmail);
@@ -195,7 +202,6 @@ const handleUpdate = async () => {
   }
 
   try {
-
     const res = await axios.put(
       "http://localhost:5000/update-user",
       formData,
@@ -206,12 +212,6 @@ const handleUpdate = async () => {
       }
     );
 
-    const isConfirmed = window.confirm(
-      "Are you sure you want to update your profile?"
-    );
-
-    if (!isConfirmed) return;
-
     dispatch(loginSuccess({
       username: res.data.username,
       email: res.data.email,
@@ -219,11 +219,9 @@ const handleUpdate = async () => {
       token
     }));
 
-
     navigate("/profile");
 
   } catch (err) {
-
     if (err.response?.data?.message) {
       alert(err.response.data.message);
     } else {
@@ -231,6 +229,7 @@ const handleUpdate = async () => {
     }
   }
 };
+
 
 return (
   <div className="min-h-screen flex justify-center items-center bg-gray-200">

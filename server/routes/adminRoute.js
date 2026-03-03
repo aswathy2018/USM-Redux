@@ -5,7 +5,7 @@ import User from "../models/User.js";
 import upload from "../middleware/upload.js";
 import adminMiddleware from "../middleware/adminMiddleware.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/generateTokens.js";
-
+import { validateUsername, validateEmail, validatePassword } from "../utils/validators.js"
 
 const router = express.Router();
 
@@ -90,6 +90,21 @@ router.post("/users", adminMiddleware, upload.single("profilePic"), async (req, 
   try {
     const { username, email, password } = req.body;
 
+    const usernameError = validateUsername(username);
+if (usernameError) {
+  return res.status(400).json({ message: usernameError });
+}
+
+const emailError = validateEmail(email);
+if (emailError) {
+  return res.status(400).json({ message: emailError });
+}
+
+const passwordError = validatePassword(password);
+if (passwordError) {
+  return res.status(400).json({ message: passwordError });
+}
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
@@ -129,6 +144,16 @@ router.put("/users/:id", adminMiddleware, async (req, res) => {
     const { username, email } = req.body;
 
     const existingUser = await User.findOne({ email });
+
+    const usernameError = validateUsername(username);
+    if (usernameError) {
+      return res.status(400).json({ message: usernameError });
+    }
+
+    const emailError = validateEmail(email);
+    if (emailError) {
+      return res.status(400).json({ message: emailError });
+    }
 
     if (existingUser && existingUser._id.toString() !== req.params.id) {
       return res.status(400).json({ message: "User already exists" });

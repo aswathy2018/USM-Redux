@@ -5,6 +5,7 @@ import User from "../models/User.js"
 import upload from "../middleware/upload.js"
 import authMiddleware from "../middleware/authMiddleware.js"
 import { generateAccessToken, generateRefreshToken } from "../utils/generateTokens.js";
+import { validateUsername, validateEmail, validatePassword } from "../utils/validators.js"
 
 const router = express.Router()
 
@@ -20,6 +21,21 @@ router.post("/signup", upload.single("profilePic"), async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
+    }
+
+    const usernameError = validateUsername(username);
+    if (usernameError) {
+      return res.status(400).json({ message: usernameError });
+    }
+
+    const emailError = validateEmail(email);
+    if (emailError) {
+      return res.status(400).json({ message: emailError });
+    }
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      return res.status(400).json({ message: passwordError });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -129,6 +145,23 @@ router.put("/update-user", authMiddleware, upload.single("profilePic"), async (r
         });
       }
 
+      const usernameError = validateUsername(username);
+if (usernameError) {
+  return res.status(400).json({ message: usernameError });
+}
+
+const emailError = validateEmail(email);
+if (emailError) {
+  return res.status(400).json({ message: emailError });
+}
+
+if (password) {
+  const passwordError = validatePassword(password);
+  if (passwordError) {
+    return res.status(400).json({ message: passwordError });
+  }
+}
+
       let updatedData = {
         username,
         email
@@ -165,5 +198,21 @@ router.put("/update-user", authMiddleware, upload.single("profilePic"), async (r
     }
   }
 );
+
+
+router.get("/userDetailes", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+
+    res.json({
+      username: user.username,
+      email: user.email,
+      profilePic: user.profilePic
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 export default router;

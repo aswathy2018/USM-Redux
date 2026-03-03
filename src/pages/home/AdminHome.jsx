@@ -254,6 +254,44 @@ const handleLogout = () => {
     setShowEdit(true);
   };
 
+// const handleUpdate = async () => {
+
+//   const usernameError = validateUsername(form.username);
+//   const emailError = validateEmail(form.email);
+
+//   if (usernameError || emailError) {
+//     setErrors({
+//       ...errors,
+//       username: usernameError,
+//       email: emailError
+//     });
+//     return;
+//   }
+
+//   try {
+
+//     await adminAxios.put(`${API}/${selectedUser._id}`, form, authHeader);
+
+//     const confirmUpdate = window.confirm("Confirm update?");
+
+//     if (!confirmUpdate) return;
+
+//     setShowEdit(false);
+//     fetchUsers();
+
+//   } catch (err) {
+
+//     if (err.response?.data?.message) {
+//       setErrors(prev => ({
+//         ...prev,
+//         email: err.response.data.message
+//       }));
+//     } else {
+//       alert("Something went wrong");
+//     }
+//   }
+// };
+
 const handleUpdate = async () => {
 
   const usernameError = validateUsername(form.username);
@@ -268,13 +306,17 @@ const handleUpdate = async () => {
     return;
   }
 
+  // ✅ CONFIRM FIRST
+  const confirmUpdate = window.confirm("Confirm update?");
+  if (!confirmUpdate) return;
+
   try {
 
-    await adminAxios.put(`${API}/${selectedUser._id}`, form, authHeader);
-
-    const confirmUpdate = window.confirm("Confirm update?");
-
-    if (!confirmUpdate) return;
+    await adminAxios.put(
+      `${API}/${selectedUser._id}`,
+      form,
+      authHeader
+    );
 
     setShowEdit(false);
     fetchUsers();
@@ -304,8 +346,6 @@ const handleAddUser = async () => {
     data.append("password", form.password);
     data.append("profilePic", form.profilePic);
 
-    await adminAxios.post(API, data, authHeader);
-
     if (!validateAllFields()) {
       return;
     }
@@ -313,6 +353,8 @@ const handleAddUser = async () => {
     const confirmAdd = window.confirm("Confirm add user?");
 
     if (!confirmAdd) return;
+
+    await adminAxios.post(API, data, authHeader);
 
     setShowAdd(false);
     fetchUsers();
@@ -350,16 +392,36 @@ const handleAddUser = async () => {
             onChange={(e) => setSearch(e.target.value)}
           />
 
-          <button
-            onClick={() => {
-              setShowAdd(true);
-              setShowPassword(false);
-              setShowConfirmPassword(false);
-            }}
-            className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
-          >
-            + Add User
-          </button>
+            <button
+              onClick={() => {
+                setForm({
+                  username: "",
+                  email: "",
+                  password: "",
+                  confirmPassword: "",
+                  profilePic: null
+                });
+
+                setErrors({
+                  username: "",
+                  email: "",
+                  password: "",
+                  confirmPassword: "",
+                  profilePic: ""
+                });
+
+                setPreview(null);
+                setSelectedUser(null);
+
+                setShowPassword(false);
+                setShowConfirmPassword(false);
+
+                setShowAdd(true);
+              }}
+              className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+            >
+              + Add User
+            </button>
           
         </div>
       </div>
